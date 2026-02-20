@@ -1,1 +1,54 @@
-<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n    <title>P2P Chat Application</title>\n    <script src=\"https://cdn.jsdelivr.net/npm/@trystero/trystero\"></script>\n    <link href=\"https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css\" rel=\"stylesheet\">\n    <style>\n        body {\n            background-color: #f8fafc;\n        }\n        .chat-container {\n            max-width: 600px;\n            margin: auto;\n            padding: 20px;\n            border: 1px solid #e2e8f0;\n            border-radius: 8px;\n            background-color: white;\n        }\n    </style>\n</head>\n<body>\n    <div class=\"chat-container\">\n        <h1 class=\"text-2xl font-bold mb-4\">P2P Chat Application</h1>\n        <div id=\"messages\" class=\"border border-gray-300 rounded-lg p-4 mb-4 h-64 overflow-y-auto\"></div>\n        <input id=\"messageInput\" type=\"text\" class=\"border p-2 w-full rounded\" placeholder=\"Type your message here...\">\n        <button id=\"sendButton\" class=\"bg-blue-500 text-white p-2 rounded mt-2 w-full\">Send</button>\n    </div>\n    <script>\n        const messagesContainer = document.getElementById('messages');\n        const messageInput = document.getElementById('messageInput');\n        const sendButton = document.getElementById('sendButton');\n        const signalingServer = 'wss://broker.hivemq.com:8884/mqtt'; // Use a public MQTT broker\n        const clientId = 'chat_' + Math.random().toString(16).substr(2, 8);\n        const trystero = new Trystero(clientId, signalingServer);\n\n        trystero.on('message', (msg) => {\n            const messageElement = document.createElement('div');\n            messageElement.textContent = msg;\n            messagesContainer.appendChild(messageElement);\n        });\n\n        sendButton.addEventListener('click', () => {\n            const message = messageInput.value;\n            if (message.trim() !== '') {\n                trystero.broadcast(message);\n                const messageElement = document.createElement('div');\n                messageElement.textContent = message;\n                messagesContainer.appendChild(messageElement);\n                messageInput.value = '';\n            }\n        });\n    </script>\n</body>\n</html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>P2P Chat Application</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-200 flex flex-col h-screen">
+    <div class="flex-1 flex flex-col justify-center items-center">
+        <h1 class="text-2xl font-bold mb-4 bg-gradient-to-r from-blue-400 to-purple-500 text-transparent bg-clip-text">P2P Chat Application</h1>
+        <div id="chat" class="w-full max-w-md p-4 bg-white rounded-lg shadow-lg backdrop-filter backdrop-blur-md bg-opacity-30">
+            <div id="messages" class="overflow-y-auto h-64 border border-gray-300 rounded-lg p-2"></div>
+            <input id="messageInput" type="text" class="border border-gray-300 rounded w-full mt-2 p-2" placeholder="Type a message...">
+            <button id="sendButton" class="mt-2 px-4 py-2 bg-blue-500 text-white rounded">Send</button>
+        </div>
+    </div>
+
+    <script>
+        // WebRTC Setup
+        const peerConnection = new RTCPeerConnection();
+        const localStorageKey = 'chat-peer';
+
+        // Function to discover peers automatically
+        function discoverPeers() {
+            const peerId = localStorage.getItem(localStorageKey);
+            // Use peerId to connect to existing peers if present
+            if (peerId) {
+                // Code to initiate connection...
+            }
+        }
+
+        // Placeholder for state management setup (Flux inspired)
+        const store = {
+            messages: [],
+            addMessage(message) {
+                this.messages.push(message);
+                // Code to update UI goes here
+            }
+        };
+
+        // Sending message function
+        document.getElementById('sendButton').onclick = () => {
+            const message = document.getElementById('messageInput').value;
+            store.addMessage(message);
+            // WebRTC send code goes here
+            document.getElementById('messageInput').value = '';
+        };
+        
+        // Call discoverPeers on page load
+        window.onload = discoverPeers;
+    </script>
+</body>
+</html>
